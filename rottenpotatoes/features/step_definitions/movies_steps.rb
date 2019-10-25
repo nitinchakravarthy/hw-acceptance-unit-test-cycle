@@ -4,6 +4,9 @@ Given /the following movies exist/ do |movies_table|
     Movie.create movie
   end
 end
+Then /^the director of "([^"]*)" should be "([^"]*)"$/ do |arg1, arg2|
+   Movie.find_by_title(arg1).director == arg2
+end
 
 Then /I should see "(.*)" before "(.*)"/ do |e1, e2|
   #  ensure that that e1 occurs before e2.
@@ -12,9 +15,17 @@ Then /I should see "(.*)" before "(.*)"/ do |e1, e2|
 end
 
 When /I (un)?check the following ratings: (.*)/ do |uncheck, rating_list|
-  rating_list.split(', ').each do |rating|
-    step %{I #{uncheck.nil? ? '' : 'un'}check "ratings_#{rating}"}
+  if uncheck == "un"
+    rating_list.split(', ').each {|x| step %{I uncheck "ratings_#{x}"}}
+  else
+    rating_list.split(', ').each {|x| step %{I check "ratings_#{x}"}}
   end
+
+end
+
+Then /I should not see any of the movies/ do
+  rows = page.all('#movies tr').size - 1
+  assert rows == 0
 end
 
 Then /I should see all the movies/ do
